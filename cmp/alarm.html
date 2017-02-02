@@ -1,0 +1,64 @@
+import requests
+from requests.auth import HTTPBasicAuth
+import json
+
+def get_messages():
+    headers = {'content-type': 'application/json'}
+    url = 'http://210.232.8.91:80/get_alarms/'
+
+    response = requests.get(url, headers=headers, verify=False)
+    return json.loads(response.text)
+
+def generate_html(messages):
+
+    thead = '<thead><tr align="left" bgcolor="#6495ED">'
+
+    for item in ['Date', 'Subject', 'From']:
+        thead += '<th width="100">{}</th>'.format(item)
+
+    thead += '</tr></thead>' 
+    tbody = '<tbody bgcolor="1c2d3c">\n'
+
+    for m in messages:
+        try:
+            tbody += '<tr>'
+            for key in ['date', 'from_address', 'subject']:
+                tbody += '<td>{}</td>'.format(m[key])
+            tbody += '</tr>\n'
+        except:
+            pass
+    tbody += '</tbody>\n'
+
+    table = '''
+<table class="table" border="1" width="auto" style="table-layout: auto;">
+{}
+{}
+</table>
+'''.format(thead, tbody)
+
+    html = '''
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+</head>
+<body>
+{}
+</body>
+</html>
+'''.format(table)
+
+    return html
+
+def get(event, context):
+    
+    messages = get_messages()
+    print messages
+    
+    html = generate_html(messages)
+    #print html  
+        
+    return {
+        'type': 'html',
+        'html': html
+    };

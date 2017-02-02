@@ -1,0 +1,94 @@
+def get(event, context):
+    
+    html = '''
+<!DOCTYPE html>
+<html>
+<style>
+#myProgress {
+  position: relative;
+  width: 100%;
+  height: 30px;
+  background-color: #ddd;
+}
+
+#myBar {
+  position: absolute;
+  width: 10%;
+  height: 100%;
+  background-color: #D511DB;
+}
+
+#label {
+  text-align: center;
+  line-height: 30px;
+  color: white;
+}
+</style>
+<head>
+    <script src="http://code.jquery.com/jquery-2.1.1.js"></script>
+    <script>
+        //Usually, you put script-tags into the head
+        function myFunction() {
+            //This performs a POST-Request.
+            //Use "$.get();" in order to perform a GET-Request (you have to take a look in the rest-API-documentation, if you're unsure what you need)
+            //The Browser downloads the webpage from the given url, and returns the data.
+            $.post( "http://210.232.8.91:80/power/", function( data ) {
+                 //As soon as the browser finished downloading, this function is called.
+                 $('#demo').html(data);
+            });
+        }
+        
+        var proxy = 'https://cors-anywhere.herokuapp.com/';
+        function send_rest() {
+            $.ajax({
+                url: proxy + 'http://210.232.8.91:80/power/',
+                type: 'POST',
+                data: {"device_id":"A1234", "state":"off"},
+                //headers: {"Access-Control-Allow-Origin": "*"},
+                //headers: {"Access-Control-Allow-Methods": "POST"},
+                success: function() { alert('PUT completed'); }
+            });
+        }
+
+        function getBinary() {
+            $.ajax({
+                url: proxy + 'http://210.232.8.91:80/photo/',
+                type: 'GET',
+                success: function() { alert('Photo Updated'); }
+            });
+        }
+        function showProgress() {
+            var elem = document.getElementById("myBar");   
+            var width = 10;
+            var id = setInterval(frame, 100);
+            function frame() {
+                if (width >= 100) {
+                  clearInterval(id);
+                } else {
+                  width++; 
+                  elem.style.width = width + '%'; 
+                  document.getElementById("label").innerHTML = width * 1  + '%';
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <p>Click the button to trigger a function.</p>
+    <button onclick="getBinary();showProgress()">Update</button>
+    <button onclick="window.location.reload()">Display</button>
+    <img src="http://210.232.8.91/" height="300" width="300" scale="0">
+    
+    <p id="demo"></p>    
+    <div id="myProgress">
+        <div id="myBar">
+        <div id="label">0%</div>
+    </div>
+</div>
+</body>
+</html>
+'''
+    return {
+        'type': 'html',
+        'html': html
+    };

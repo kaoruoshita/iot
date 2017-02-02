@@ -1,0 +1,20 @@
+def get(event, context):
+    return {
+        'type': 'graph',
+        'version': 0.1,
+        'config':{
+            'chart': {
+                'type': 'column'
+            },
+            'xAxis': {
+                'categories': ['Power Usage']
+            },
+            'series':  [{
+                'data': [5]
+            }, {
+                'data':  [2]
+            }, {
+                'data': [3]
+            }]
+        }
+    };

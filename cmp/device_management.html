@@ -1,0 +1,102 @@
+import requests
+from requests.auth import HTTPBasicAuth
+import json
+
+def _get_device_state(device_id):
+    
+    headers = {'Accept': 'application/json'}
+    url = 'http://210.232.8.91:80/state/' + device_id + '/'
+    response = requests.get(url, headers=headers)
+    print response.text
+    return response.text
+
+def get_device_details(device_id):
+    state = _get_device_state(device_id)
+    state_display = ''
+    if state == '1':
+        state_display = "ON"
+    else:
+        state_display = "OFF"
+    return [{"device_id": device_id, "name":"Datacenter 1", "state": state_display},
+           {"device_id": "A56789", "name":"Datacenter 2", "state": "ON"},
+           {"device_id": "Bfg12345", "name":"Datacenter 2", "state": "OFF"}]
+
+
+
+def generate_html(device_details):
+
+    thead = '<thead><tr align="left" bgcolor="D511DB">'
+
+    for item in ['Device ID', 'Name', 'State', 'Action']:
+        thead += '<th>{}</th>'.format(item)
+
+    thead += '</tr></thead>' 
+    tbody = '<tbody bgcolor="030302">\n'
+
+    for d in device_details:
+        tbody += '<tr>'
+        for key in ['device_id', 'name', 'state']:
+            tbody += '<td>{}</td>'.format(d[key])
+        
+        if d["state"] == "ON":
+            
+            tbody += '''<td><button onclick="send_rest('off')" class="button1" 
+                        type="submit" style="background-color:#4CAF50; 
+                        height:50px;width:160px ; border:none">Power OFF</button>
+                        </td>'''
+        else:
+            tbody += '''<td><button onclick="send_rest('on')" 
+                        class="button1" type="submit" style="background-color:#CE3510;
+                        height:50px;width:160px ; border:none">Power ON</button></td>'''
+        tbody += '</tr>\n'
+
+    tbody += '</tbody>\n'
+
+    table = '''
+<table class="table" border="1" width="auto" style="table-layout: auto;">
+{}
+{}
+</table>
+'''.format(thead, tbody)
+
+    script = '''
+<script src="http://code.jquery.com/jquery-2.1.1.js"></script>
+<script>
+    var proxy = 'https://cors-anywhere.herokuapp.com/';
+    function send_rest(state) {
+        $.ajax({
+            url: proxy + 'http://210.232.8.91:80/power/',
+            type: 'POST',
+            data: {"device_id":"22531", "state":state},
+            success: function() { alert('Completed'); }
+        });
+    }
+</script>
+'''
+    html = '''
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+{}
+<meta charset="utf-8">
+</head>
+<body>
+{}
+</body>
+</html>
+'''.format(script, table)
+
+    return html
+
+def get(event, context):
+    
+    device_id = '22531'
+
+    device_details = get_device_details(device_id)
+    html = generate_html(device_details)
+    #print html  
+        
+    return {
+        'type': 'html',
+        'html': html
+    };
